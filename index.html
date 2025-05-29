@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(to right, #e0f7fa, #f0fdf4);
+    color: #1e293b;
+    text-align: center;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .logo {
+    width: 100px;
+    text-align: left;
+  }
+
+  h2 {
+    margin: 10px 0;
+    color: #0f766e;
+  }
+
+  .balance-box {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 20px;
+    margin: 20px auto;
+  }
+
+  .summary {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 10px;
+  }
+
+  .income {
+    color: #059669;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .expense {
+    color: #dc2626;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .main-content {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .table-container, .form-container {
+    width: 48%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+  }
+
+  thead tr {
+    background-color: #67e8f9;
+    color: #1e293b;
+  }
+
+  tbody tr:hover {
+    background-color: #e0f2fe;
+  }
+
+  .form-container label {
+    display: block;
+    margin: 10px 0;
+    text-align: left;
+    color: #0f172a;
+    font-weight: 500;
+  }
+
+  input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    font-size: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.3);
+  }
+
+  button {
+    cursor: pointer;
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #0284c7;
+  }
+
+  .arrow-up {
+    color: #dc2626;
+  }
+
+  .arrow-down {
+    color: #059669;
+  }
+</style>
+
+</head>
+<body>
+  <div class="container"> 
+    <h2>Expense Tracker</h2>
+
+    <div class="balance-box">
+      <h1>✔ Balance: <span id="balance">0</span></h1>
+      <div class="summary">
+        <p>Total Income:<br><span class="income" id="income">0</span></p>
+        <p>Total Expenses:<br><span class="expense" id="expenses">0</span></p>
+      </div>
+    </div>
+
+    <div>
+      <label>Select Month:
+        <input type="month" id="selectedMonth" onchange="updateUI()">
+      </label>
+    </div>
+
+    <div class="main-content">
+      <div class="table-container">
+        <h3>Expenses</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>S.no.</th>
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody id="expense-table"></tbody>
+        </table>
+      </div>
+
+      <div class="form-container">
+        <h3>Add new</h3>
+        <label>Entry type:
+          <select id="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <label>Name:
+          <input type="text" id="name" placeholder="name">
+        </label>
+        <label>Amount:
+          <input type="number" id="amount" value="0">
+        </label>
+        <button onclick="addEntry()">Add Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let entries = [];
+
+    function saveToLocalStorage() {
+      localStorage.setItem('expenseEntries', JSON.stringify(entries));
+    }
+
+    function loadFromLocalStorage() {
+      const stored = localStorage.getItem('expenseEntries');
+      if (stored) {
+        entries = JSON.parse(stored);
+      }
+    }
+
+    function updateUI() {
+      const selectedMonth = document.getElementById('selectedMonth').value;
+      const table = document.getElementById('expense-table');
+      table.innerHTML = '';
+      let income = 0, expenses = 0;
+
+      const filtered = selectedMonth
+        ? entries.filter(e => e.month === selectedMonth)
+        : entries;
+
+      filtered.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        let arrow = entry.type === 'income' ? '<span class="arrow-down">↘</span>' : '<span class="arrow-up">↗</span>';
+
+        if (entry.type === 'income') {
+          income += entry.amount;
+        } else {
+          expenses += entry.amount;
+        }
+
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.name}</td>
+          <td>${entry.amount}</td>
+          <td>${arrow}</td>
+          <td><button onclick="deleteEntry(${entries.indexOf(entry)})">✖</button></td>
+        `;
+        table.appendChild(row);
+      });
+
+      document.getElementById('income').textContent = income;
+      document.getElementById('expenses').textContent = expenses;
+      document.getElementById('balance').textContent = income - expenses;
+      saveToLocalStorage();
+    }
+
+    function addEntry() {
+      const name = document.getElementById('name').value;
+      const amount = parseInt(document.getElementById('amount').value);
+      const type = document.getElementById('type').value;
+      const month = document.getElementById('selectedMonth').value;
+
+      if (!name || amount <= 0 || !month) {
+        alert('Please enter valid details');
+        return;
+      }
+
+      entries.push({ name, amount, type, month });
+      updateUI();
+      document.getElementById('name').value = '';
+      document.getElementById('amount').value = 0;
+    }
+
+    function deleteEntry(index) {
+      entries.splice(index, 1);
+      updateUI();
+    }
+
+    window.onload = function () {
+      loadFromLocalStorage();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      document.getElementById('selectedMonth').value = `${year}-${month}`;
+      updateUI();
+    };
+  </script>
+</body>
+</html>
