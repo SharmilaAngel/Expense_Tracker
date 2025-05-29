@@ -6,7 +6,7 @@ An interactive web application to help users manage their personal finances. Thi
 
 ##  Live Demo
 
-👉 [Click here to view the project](https://github.com/SharmilaAngel/Expense_Tracker.git)  
+👉 [Click here to view the project](https://sharmilaangel.github.io/Expense_Tracker/)  
 
 ---
 
